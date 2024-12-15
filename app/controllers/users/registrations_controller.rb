@@ -3,6 +3,8 @@
 class Users::RegistrationsController < Devise::RegistrationsController
   respond_to :json
 
+  # TODO: Add registration token check
+
   private
 
   def respond_with(current_user, _opts = {})
