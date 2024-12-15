@@ -64,3 +64,5 @@ gem 'jsonapi-serializer'
 
 gem "rack-cors", "~> 2.0"
 gem "pry"
+
+gem "enumerate_it", "~> 4.0"
