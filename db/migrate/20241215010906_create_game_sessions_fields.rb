@@ -4,7 +4,7 @@ class CreateGameSessionsFields < ActiveRecord::Migration[7.0]
       t.belongs_to :game_sessions_game_row
 
       t.integer :position, null: false
-      t.integer :value, null: false, default: 0
+      t.integer :value
 
       t.timestamps
     end

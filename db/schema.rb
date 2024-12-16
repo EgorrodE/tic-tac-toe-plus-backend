@@ -17,7 +17,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_12_15_013610) do
   create_table "game_sessions_fields", force: :cascade do |t|
     t.bigint "game_sessions_game_row_id"
     t.integer "position", null: false
-    t.integer "value", default: 0, null: false
+    t.integer "value"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["game_sessions_game_row_id"], name: "index_game_sessions_fields_on_game_sessions_game_row_id"
@@ -34,7 +34,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_12_15_013610) do
   create_table "game_sessions_games", force: :cascade do |t|
     t.bigint "game_sessions_session_row_id"
     t.integer "position", null: false
-    t.integer "value", default: 0, null: false
+    t.integer "value"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["game_sessions_session_row_id"], name: "index_game_sessions_games_on_game_sessions_session_row_id"
@@ -50,15 +50,17 @@ ActiveRecord::Schema[7.0].define(version: 2024_12_15_013610) do
     t.datetime "updated_at", null: false
     t.index ["game_sessions_field_id"], name: "index_game_sessions_moves_on_game_sessions_field_id"
     t.index ["game_sessions_player_id"], name: "index_game_sessions_moves_on_game_sessions_player_id"
+    t.index ["game_sessions_session_id", "position"], name: "game_sessions_session_unique_moves", unique: true
     t.index ["game_sessions_session_id"], name: "index_game_sessions_moves_on_game_sessions_session_id"
   end
 
   create_table "game_sessions_players", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "game_sessions_session_id"
-    t.integer "figure", default: 0, null: false
+    t.integer "figure", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["game_sessions_session_id", "user_id"], name: "game_sessions_session_unique_players", unique: true
     t.index ["game_sessions_session_id"], name: "index_game_sessions_players_on_game_sessions_session_id"
     t.index ["user_id"], name: "index_game_sessions_players_on_user_id"
   end

@@ -2,7 +2,7 @@ class GameSessions::SessionSerializer
   include JSONAPI::Serializer
   attributes :id, :secret, :status
 
-  attribute(:field) do |session|
+  attribute(:gamesValues) do |session|
     session_rows = session.session_rows.includes(games: { game_rows: :fields })
 
     session_rows.map do |session_row|
@@ -17,7 +17,7 @@ class GameSessions::SessionSerializer
     end
   end
 
-  attribute(:last_move) do |session|
+  attribute(:lastMove) do |session|
     move = session.moves.last
     next if move.blank?
 
@@ -36,7 +36,7 @@ class GameSessions::SessionSerializer
   attribute(:players) do |session|
     session.players.map do |p|
       {
-        id: p.id,
+        id: p.user_id,
         figure: p.figure
       }
     end

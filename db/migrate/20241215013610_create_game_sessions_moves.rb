@@ -9,6 +9,10 @@ class CreateGameSessionsMoves < ActiveRecord::Migration[7.0]
       t.integer :position, null: false
 
       t.timestamps
+
+      t.index [:game_sessions_session_id, :game_sessions_field, :position],
+              unique: true,
+              name: :game_sessions_session_unique_moves
     end
   end
 end

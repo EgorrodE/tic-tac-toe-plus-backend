@@ -1,44 +1,78 @@
-class GameSessions::SessionsController < ApplicationController
-  respond_to :json
+module GameSessions
+  class SessionsController < ApplicationController
+    respond_to :json
 
-  def create
-    render json: {}, status: :unauthorised and return unless current_user.present?
+    def create
+      return unless validate_user
 
-    session = SessionBuilder.call(user_id: current_user.id)
-    render json: session_json(session) and return if session.save
+      session = SessionBuilder.call(user_id: current_user.id)
+      render(json: { secret: session.secret }) and return if session.save
 
-    render json: {}, status: :unprocessable_entity
-  end
-
-  def join
-    render json: {}, status: :unauthorised and return unless current_user.present?
-
-    session = Session.find_by(secret: params[:secret])
-    render json: {}, status: :not_found and return unless session.present?
-
-    render json: session_json(session) and return if session.players.any?(user_id: current_user.id)
-    if session.players.count > 1
-      render json: { message: 'Game already full' }, status: :unprocessable_entity and return
+      render plain: 'Something went wrong. Try again.', status: :unprocessable_entity
     end
 
-    opponent = session.players.last
-    player = Player.new(player_params(session, opponent))
-    render json: session_json(session.reload) and return if player.save
+    def join
+      return unless validate_user
 
-    render json: {}, status: :unprocessable_entity
-  end
+      session = Session.find_by(secret: params[:secret])
+      return unless validate_session_exists(session)
 
-  private
+      render(json: session_data(session)) and return if user_player(session).present?
 
-  def session_json(session)
-    SessionSerializer.new(session).serializable_hash.to_json
-  end
+      if session.players.count > 1
+        render plain: 'Game already full', status: :unprocessable_entity
+        return
+      end
 
-  def player_params(session, opponent)
-    {
-      user: current_user,
-      session: session,
-      figure:  GameSessions::AVAILABLE_FIGURES.without(opponent.figure).first
-    }
+      opponent = session.players.last
+      player = Player.new(player_params(session, opponent))
+      render(json: session_data(session.reload)) and return if player.save
+
+      render plain: 'Something went wrong. Try again.', status: :unprocessable_entity
+    end
+
+    def move
+      return unless validate_user
+
+      session = Session.find_by(secret: params[:secret])
+      return unless validate_session_exists(session)
+
+      player = user_player(session)
+      render(plain: 'You are not participating in the game', status: :unauthorized) and return if player.blank?
+
+      new_move(session, player)
+    end
+
+    private
+
+    def validate_user
+      render(plain: 'login-required', status: :unauthorized) and return false unless current_user.present?
+
+      true
+    end
+
+    def validate_session_exists(session)
+      render(plain: 'Session not found', status: :not_found) and return unless session.present?
+    end
+
+    def user_player(session)
+      session.players.find_by(user_id: current_user.id)
+    end
+
+    def new_move(session, player)
+
+    end
+
+    def session_data(session)
+      { session: SessionSerializer.new(session).serializable_hash }
+    end
+
+    def player_params(session, opponent)
+      {
+        user: current_user,
+        session: session,
+        figure:  AVAILABLE_FIGURES.without(opponent.figure).first
+      }
+    end
   end
 end
